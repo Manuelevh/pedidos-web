@@ -20,20 +20,45 @@ Este repositorio es el **caso hilo** del curso *Desarrollando con IA* (Vela LATA
 
 ```
 pedidos-web/
-├── AGENTS.md                         ← U2: vacío a propósito; lo escribes en el paso 1 del taller
+├── AGENTS.md                         ← U2: reglas para agentes (escrito en el paso 1 del taller)
 ├── PedidosWeb.sln
 ├── src/
 │   ├── PedidosWeb.Core/              ← lógica de dominio
-│   │   ├── Folios/FolioFormatter.cs  ← U1: aquí implementas FormatearFolio()
+│   │   ├── Folios/FolioFormatter.cs  ← U1: FormatearFolio() implementada (R1 a R5)
 │   │   └── Pedidos/                  ← U2: modelo Pedido y repositorio en memoria
 │   └── PedidosWeb.Api/               ← U2: API REST (Minimal API)
 │       └── Program.cs
 ├── tests/
-│   └── PedidosWeb.Core.Tests/        ← tests xUnit
-│       ├── Folios/FolioFormatterTests.cs
-│       └── Pedidos/PedidoRepositorioEnMemoriaTests.cs
+│   ├── PedidosWeb.Core.Tests/        ← tests xUnit del dominio
+│   │   ├── Folios/FolioFormatterTests.cs
+│   │   └── Pedidos/PedidoRepositorioEnMemoriaTests.cs
+│   └── PedidosWeb.Api.Tests/         ← U2: tests de integración de la API (WebApplicationFactory)
+│       └── EndpointsExistentesTests.cs
 ├── docs/                             ← U1: aquí va tu mapa-sdlc.md
-└── specs/                            ← U2: aquí van las specs de cada historia
+└── specs/                            ← U2: specs de cada historia
+    ├── HU-01-listar-pedidos/         ← spec.md y plan.md aprobados; HU-01 implementada
+    └── HU-02-buscar-por-numero/      ← spec.md y plan.md aprobados; HU-02 implementada
+```
+
+### Estado actual (9 de noviembre de 2026)
+
+- `dotnet build`: compila sin advertencias.
+- `dotnet test`: 72 tests en verde (52 en `PedidosWeb.Core.Tests` y 20 en `PedidosWeb.Api.Tests`).
+- `AGENTS.md` escrito. Para tests de API se agregó el paquete `Microsoft.AspNetCore.Mvc.Testing` 10.0.0 (aprobado por el PO).
+- HU-01 implementada: `GET /api/pedidos` con filtros, orden y paginación. Los 25 criterios de aceptación tienen test.
+- HU-02 implementada: parámetro `numero` en el mismo listado, que acepta el número (`9`) o el folio
+  (`PED-ANT-000009`, también `ped-ant-9`). Los 11 criterios de aceptación tienen test.
+- Lógica en `src/PedidosWeb.Core/Pedidos/ListadoPedidos.cs`; endpoint en `Program.cs`.
+
+Ejemplos con la API levantada:
+
+```
+http://localhost:5080/api/pedidos
+http://localhost:5080/api/pedidos?clienteId=C-001&estado=Entregado
+http://localhost:5080/api/pedidos?cliente=clavo&desde=01-10-2026&hasta=31-10-2026
+http://localhost:5080/api/pedidos?pagina=2&tamanoPagina=10
+http://localhost:5080/api/pedidos?numero=9
+http://localhost:5080/api/pedidos?numero=PED-ANT-000009
 ```
 
 ## Cómo empezar
@@ -156,8 +181,8 @@ PED-{SUCURSAL}-{NUMERO}
 
 ### Lo que ya está y lo que falta
 
-- `FolioFormatterTests.cs` trae **3 tests** con los casos base (las tres primeras filas de la tabla).
-- **Los demás casos no tienen test.** Si tu implementación, o la de Claude, olvida una regla, los tests no te van a avisar. Escribe tú los tests que faltan.
+- `FormatearFolio()` está implementada según R1 a R5.
+- `FolioFormatterTests.cs` cubre todas las filas de la tabla de ejemplos: 15 casos agrupados por regla (casos base, R1, R2, R3 y R5).
 
 ---
 
@@ -183,8 +208,7 @@ PED-{SUCURSAL}-{NUMERO}
 
 - **Modelo** `Pedido` (`src/PedidosWeb.Core/Pedidos/Pedido.cs`): `Id`, `Folio`, `ClienteId`, `ClienteNombre`, `Fecha` (`DateOnly`), `Estado` (texto), `Total` (CLP, `decimal` sin decimales, nunca `double` ni `float`) y `Sucursal`.
 - **Repositorio en memoria** con **45 pedidos de ejemplo** entre el 2 de septiembre y el 31 de octubre de 2026. Todos son ficticios.
-- **Endpoints:** `GET /salud` y `GET /api/pedidos/{id}`.
-- **Todavía no existe** el listado con filtros: es la historia **HU-01** que construyes en el taller.
+- **Endpoints:** `GET /salud`, `GET /api/pedidos/{id}` y `GET /api/pedidos` (listado con filtros de la historia **HU-01** y búsqueda por número o folio de **HU-02**, implementados según sus specs en `specs/`).
 - **`AGENTS.md` está vacío a propósito.** Lo escribes tú en el paso 1, con el prompt maestro y la guía de [agents.md](https://agents.md/).
 
 ### Los datos de ejemplo, en números
