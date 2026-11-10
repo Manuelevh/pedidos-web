@@ -1,37 +1,38 @@
 # AGENTS.md · Pedidos Web
 
+Instrucciones para agentes de IA que trabajan en este repositorio (Claude Code, Codex, Copilot y otros). Las personas del equipo también las siguen.
+
 ## Proyecto
-Portal web de pedidos de una distribuidora; moderniza Pedidos Legado (Delphi + DBISAM).
-API REST en ASP.NET Core (.NET 10) con 45 pedidos de ejemplo en memoria, sin base de datos.
 
-## Comandos
+Portal web de pedidos de una distribuidora. Moderniza **Pedidos Legado** (Delphi + DBISAM) hacia .NET y, desde la Unidad 5, PostgreSQL. El detalle del negocio está en `README.md`.
+
+## Stack y comandos
+
+- .NET 10, C#, xUnit. IDE de referencia: JetBrains Rider.
 - Compilar: `dotnet build`
-- Testear: `dotnet test`
-- Ejecutar la API: `dotnet run --project src/PedidosWeb.Api` (http://localhost:5080, chequeo en `/salud`)
+- Tests: `dotnet test`
+- Ejecuta `dotnet test` después de cada cambio y antes de decir que terminaste.
 
-## Estilo de código
-- Nombres de dominio en español: `Pedido`, `IPedidoRepositorio`, `ObtenerPorId`, `FormatearFolio`.
-- Dinero en pesos chilenos: `decimal` sin decimales; nunca `double` ni `float`.
-- Fechas sin hora: `DateOnly`.
-- `src/PedidosWeb.Core`: modelo y lógica de dominio, sin dependencias de infraestructura.
-- `src/PedidosWeb.Api`: Minimal API en `Program.cs`; expone endpoints y delega en Core.
-- `Nullable` habilitado en todos los proyectos.
+## Reglas del equipo
 
-## Tests
-- xUnit 2.9 en `tests/PedidosWeb.Core.Tests/`, con carpetas espejo de `src/PedidosWeb.Core/`.
-- Tests de la API en `tests/PedidosWeb.Api.Tests/`, con `WebApplicationFactory<Program>`.
-- Un archivo de tests por clase: `<Clase>Tests.cs`.
-- Nombre de cada test: `Metodo_Escenario_ResultadoEsperado`.
-- Se ejecutan con `dotnet test` y deben estar en verde antes de cada commit.
+1. **Idioma.** Responde, comenta el código y escribe los mensajes en español de Chile. Clases y métodos del dominio van en español (`FormatearFolio`, `CalcularTotal`).
+2. **Plan antes de editar.** Antes de modificar un archivo, explica tu plan en máximo 5 viñetas y espera mi aprobación.
+3. **Nada de commit, push ni merge.** Eso lo hace siempre una persona, después de leer el diff.
+4. **Cada cambio de comportamiento lleva su test xUnit.** Si cambias una regla, el test que la prueba cambia en el mismo cambio.
+5. **No agregues paquetes NuGet** sin preguntar primero.
+6. **Solo trabajas en `src/`, `tests/` y `docs/`.** No toques la configuración del IDE (`.idea/`), ni `AGENTS.md`, ni archivos fuera del repositorio.
+7. **Dinero en pesos chilenos.** Los montos son enteros: usa `decimal` sin decimales y nunca `double` ni `float`.
+8. **Si una regla del negocio no está escrita, pregunta.** No la inventes ni la supongas.
 
-## Seguridad
-- Nunca escribas secretos, claves ni cadenas de conexión en el código ni en archivos versionados.
+## Estructura
 
-## Reglas de trabajo
-- Toda funcionalidad parte de una spec aprobada en `specs/<historia>/spec.md`.
-- Un test xUnit por criterio de aceptación.
-- No hacer commit sin tests en verde.
-- Sin preguntar puedes: leer archivos y ejecutar `dotnet build` y `dotnet test`.
-- Cualquier edición de archivos requiere aprobación previa.
-- Pregunta siempre antes de: agregar paquetes NuGet; tocar `.sln` o `.csproj` o crear proyectos;
-  cambiar los datos de ejemplo; hacer commit, push o merge.
+- `src/PedidosWeb.Core/`: lógica de dominio, sin dependencias de infraestructura.
+- `tests/PedidosWeb.Core.Tests/`: tests xUnit. Un archivo de tests por clase.
+- `docs/`: documentación del equipo (por ejemplo, `docs/mapa-sdlc.md`).
+
+## Definition of Done
+
+- Compila sin warnings nuevos.
+- `dotnet test` en verde.
+- Cada regla del README tocada tiene su test.
+- Una persona leyó y entendió el diff.
