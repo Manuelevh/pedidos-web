@@ -1,0 +1,48 @@
+# CI de PedidosWeb: compila y ejecuta los tests en cada push y en cada PR.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Permisos mínimos: el token de GitHub solo puede leer el código.
+permissions:
+  contents: read
+
+# Si llega un push nuevo a la misma rama o PR, cancela la ejecución anterior.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build y test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    steps:
+      # Acciones fijadas por SHA de commit (el comentario indica la versión).
+      - name: Obtener el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Instalar .NET SDK
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: '10.0.404'
+
+      - name: Restaurar dependencias
+        run: dotnet restore PedidosWeb.sln
+
+      - name: Compilar
+        run: dotnet build PedidosWeb.sln --configuration Release --no-restore
+
+      - name: Ejecutar tests
+        run: dotnet test PedidosWeb.sln --configuration Release --no-build --verbosity normal
