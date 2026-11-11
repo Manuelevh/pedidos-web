@@ -7,7 +7,7 @@ Borra estos comentarios al terminar.
 
 ## Preparación
 
-- **Tests en `Skip` (pendientes de unidades anteriores):** <ninguno, o cuáles y su motivo>
+- **Tests en `Skip` (pendientes de unidades anteriores):** ninguno. `dotnet test` en local: 102 tests en verde (78 Core + 24 Api), 0 omitidos.
 
 ## Etapa 1 · Tests que sí prueban
 
@@ -19,9 +19,13 @@ Borra estos comentarios al terminar.
 
 ## Etapa 2 · Pipeline seguro
 
-- **`ci.yml`:** <enlace al primer run en verde>
-- **`claude.yml` en `main`:** <sí / no>
-- **Revisé:** permisos mínimos ☐ · timeout ☐ · versiones fijas ☐ · token solo como secreto ☐
+- **`ci.yml`:** https://github.com/Manuelevh/pedidos-web/actions/runs/43079801437 (commit `c9ae45c`)
+- **`claude.yml` en `main`:** sí (commit `fdefc4a`); máximo 5 turnos y sin `Edit`/`Write`: Claude solo diagnostica.
+- **Revisé:** permisos mínimos ☑ · timeout ☑ · versiones fijas ☑ · token solo como secreto ☑
+  - Permisos: `contents: read` en ambos workflows; en `claude.yml` solo `id-token: write` para el token de la App.
+  - Timeout: `timeout-minutes: 10` en ambos jobs.
+  - Versiones: `ubuntu-24.04`, .NET SDK `10.0.404` y acciones fijadas por SHA de commit.
+  - Token: `CLAUDE_CODE_OAUTH_TOKEN` como secreto del repo; búsqueda de `sk-ant-` en archivos e historial sin resultados.
 
 ## Etapa 3 · La falla
 
