@@ -1,0 +1,58 @@
+# Claude en GitHub: responde cuando alguien menciona @claude en issues y PRs.
+name: Claude
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  issues:
+    types: [opened, assigned]
+
+# Permisos mínimos del GITHUB_TOKEN: solo lectura.
+# Las escrituras (comentarios, ramas, commits) las hace la GitHub App de Claude con su propio token.
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+  actions: read     # permite a Claude leer los resultados del CI en los PRs
+  id-token: write   # OIDC: canjea la identidad del workflow por el token de la GitHub App
+
+# Una sola ejecución a la vez por issue/PR; no cancela la que está en curso.
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    # Solo se ejecuta si hay una mención a @claude y la escribe alguien con acceso al repo.
+    if: |
+      (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      ) &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'),
+        github.event.comment.author_association || github.event.review.author_association || github.event.issue.author_association)
+    name: Responder a @claude
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      # Acciones fijadas por SHA de commit (el comentario indica la versión).
+      - name: Obtener el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Ejecutar Claude Code
+        uses: anthropics/claude-code-action@9008224dd4f743876f528e6ba0f0d611f076a7f9 # v1.0.271
+        with:
+          # El token NUNCA va en este archivo: se lee del secreto del repo.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Máximo 5 turnos y sin editar archivos: Claude diagnostica; tú corriges.
+          claude_args: '--max-turns 5 --disallowedTools "Edit,Write"'
